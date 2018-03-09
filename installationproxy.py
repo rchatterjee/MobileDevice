@@ -22,8 +22,8 @@
 # SOFTWARE.
 
 
-from amdevice import *
-from plistservice import *
+from .amdevice import *
+from .plistservice import *
 
 
 class InstallationProxy(PlistService):
@@ -38,28 +38,28 @@ class InstallationProxy(PlistService):
 	def lookup_applications(self):
 		retval = []
 		self._sendmsg({
-			u'Command': u'Browse',
-			u'ClientOptions': {
-				u'ApplicationType': u'Any'
+            'Command': b'Browse',
+			b'ClientOptions': {
+				b'ApplicationType': b'Any'
 			}
 		})
 		# I've no idea why we get it in multiple responses .. but we do
 		while True:
 			reply = self._recvmsg()
 			if (    reply is None 
-				or (    u'Status' in reply 
-					and reply[u'Status'] == u'Complete')):
+				or (    'Status' in reply 
+					and reply['Status'] == 'Complete')):
 				break # done
-			for app in reply[u'CurrentList']:
+			for app in reply['CurrentList']:
 				retval.append(app)
 		return retval
 
 	def install_application(self, path, options=None, progress=None):
-		u'''Install an application from the /PublicStaging directory'''
+		'''Install an application from the /PublicStaging directory'''
 		self._install_or_upgrade(True, path, options, progress)
 
 	def upgrade_application(self, path, options=None, progress=None):
-		u'''Upgrade an application from the /PublicStaging directory'''
+		'''Upgrade an application from the /PublicStaging directory'''
 		self._install_or_upgrade(False, path, options, progress)
 
 	def _install_or_upgrade(self, install, path, options=None, progress=None):
@@ -71,7 +71,7 @@ class InstallationProxy(PlistService):
 			cfoptions = CFTypeFrom(options)
 		else:
 			cfoptions = CFTypeFrom({
-				u'PackageType': u'Developer'
+				'PackageType': 'Developer'
 			})
 		cb = AFCProgressCallback(callback)
 		if progress is not None:
@@ -83,7 +83,7 @@ class InstallationProxy(PlistService):
 		CFRelease(cfpath)
 		CFRelease(cfoptions)
 		if err != MDERR_OK:
-			raise RuntimeError(u'Unable to install application', err)
+			raise RuntimeError('Unable to install application', err)
 
 	# TODO: archive, restore, etc
 
@@ -107,32 +107,32 @@ def register_argparse_install(cmdargs):
 		apps = {}
 		maxappid = 0
 		for app in pxy.lookup_applications():
-			appid = app[u'CFBundleIdentifier']
-			apps[appid] = app[u'Path']
+			appid = app['CFBundleIdentifier']
+			apps[appid] = app['Path']
 			if len(appid) > maxappid:
 				maxappid = len(appid)
 		pxy.disconnect()
 		for appid in sorted(apps.keys()):
 			apppath = apps[appid]
-			print(appid.ljust(maxappid) + u' ' + apppath)
+			print((appid.ljust(maxappid) + ' ' + apppath))
 
 	installparser = cmdargs.add_parser(
-		u'install', 
-		help=u'installation proxy commands'
+		'install', 
+		help='installation proxy commands'
 	)
 	installcmd = installparser.add_subparsers()
 
 	# browse command
 	browsecmd = installcmd.add_parser(
-		u'browse',
-		help=u'list all information about applications on the device'
+		'browse',
+		help='list all information about applications on the device'
 	)
 	browsecmd.set_defaults(func=cmd_browse)
 
 	# listappid command
 	listappscmd = installcmd.add_parser(
-		u'listapps',
-		help=u'lists all application ids'
+		'listapps',
+		help='lists all application ids'
 	)
 	listappscmd.set_defaults(func=cmd_listapps)
 

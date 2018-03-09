@@ -22,7 +22,7 @@
 # SOFTWARE.
 
 
-if __name__ == u'__main__':
-	from __init__ import *
+if __name__ == '__main__':
+	from .__init__ import *
 
 	argparse_parse(globals())

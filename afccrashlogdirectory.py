@@ -22,17 +22,17 @@
 # SOFTWARE.
 
 
-from amdevice import *
-from afc import *
+from .amdevice import *
+from .afc import *
 
 
 class AFCCrashLogDirectory(AFC):
-	u'''provides access to the /var/mobile/Library/Logs/CrashReporter dir'''
+	'''provides access to the /var/mobile/Library/Logs/CrashReporter dir'''
 
 	def __init__(self, amdevice):
 		s = amdevice.start_service(AMSVC_CRASH_REPORT_COPY_MOBILE)
 		if s is None:
-			raise RuntimeError(u'Unable to launch:', AMSVC_CRASH_REPORT_COPY_MOBILE)
+			raise RuntimeError('Unable to launch:', AMSVC_CRASH_REPORT_COPY_MOBILE)
 		AFC.__init__(self, s)
 
 

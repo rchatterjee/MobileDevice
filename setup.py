@@ -35,38 +35,38 @@ def readfile(filename):
 	return text
 
 def getcommit():
-	retval = u''
+	retval = ''
 	try:
-		retval = check_output([u'git', u'rev-list', u'--all', u'--count'])
-		retval = u'.' + retval.strip()
+		retval = check_output(['git', 'rev-list', '--all', '--count'])
+		retval = '.' + retval.strip()
 	except:
 		pass
 	return retval
 
 
 setup(
-	name=u'Distutils',
-	version=u'1.0' + getcommit(),
-	description=u'A python package, and command line tool, which wraps Apple\'s MobileDevice API - providing access to iOS devices',
-	long_description = readfile(u'README.md'),
-	author=u'Cooper',
-	url=u'https://github.com/mountainstorm/MobileDevice',
+	name='Distutils',
+	version='1.0' + getcommit(),
+	description='A python package, and command line tool, which wraps Apple\'s MobileDevice API - providing access to iOS devices',
+	long_description = readfile('README.md'),
+	author='Cooper',
+	url='https://github.com/mountainstorm/MobileDevice',
 	classifiers = [
-		u'Development Status :: 5 - Production/Stable',
-		u'Environment :: Console',
-		u'Environment :: MacOS X',
-		u'Intended Audience :: Developers',
-		u'License :: OSI Approved :: MIT License',
-		u'Natural Language :: English',
-		u'Operating System :: MacOS :: MacOS X',
-		u'Programming Language :: Python',
-		u'Programming Language :: Python :: 2.7',
-		u'Topic :: Security',
-		u'Topic :: Software Development :: Libraries :: Python Modules',
-		u'Topic :: Utilities',
+		'Development Status :: 5 - Production/Stable',
+		'Environment :: Console',
+		'Environment :: MacOS X',
+		'Intended Audience :: Developers',
+		'License :: OSI Approved :: MIT License',
+		'Natural Language :: English',
+		'Operating System :: MacOS :: MacOS X',
+		'Programming Language :: Python',
+		'Programming Language :: Python :: 2.7',
+		'Topic :: Security',
+		'Topic :: Software Development :: Libraries :: Python Modules',
+		'Topic :: Utilities',
 	],
-	license= readfile(u'LICENSE'),
+	license= readfile('LICENSE'),
 	packages=['MobileDevice'],
-	package_dir={'': u'../'},
-	scripts=[u'mdf']
+	package_dir={'': '../'},
+	scripts=['mdf']
 )

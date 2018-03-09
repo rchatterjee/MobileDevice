@@ -22,9 +22,9 @@
 # SOFTWARE.
 
 
-from MobileDevice import *
-from amdevice import *
-from wirservice import *
+from .MobileDevice import *
+from .amdevice import *
+from .wirservice import *
 import uuid
 import json
 
@@ -43,15 +43,15 @@ class WebKitInspector(WIRService):
 			# they don't check the type/convert WIRConnectionIdentifierKey
 			# Thus if we send a string, it converts to a CFData and Safari goes
 			# pop when it tries to call compare on the CFData
-			retval = retval.decode(u'utf-8') 
+			retval = retval.decode('utf-8') 
 		return retval
 
 	# register a connection_uuid
 	def reportIdentifier(self, connection_uuid):
 		self._sendmsg(
-			u'_rpc_reportIdentifier:',
+			'_rpc_reportIdentifier:',
 			{ 
-				u'WIRConnectionIdentifierKey': connection_uuid,
+				'WIRConnectionIdentifierKey': connection_uuid,
 			}
 		)
 		retval = self._recvmsg()
@@ -61,9 +61,9 @@ class WebKitInspector(WIRService):
 	# list avaliable applications
 	def getConnectedApplications(self, connection_uuid):
 		self._sendmsg(
-			u'_rpc_getConnectedApplications:',
+			'_rpc_getConnectedApplications:',
 			{
-				u'WIRConnectionIdentifierKey': connection_uuid
+				'WIRConnectionIdentifierKey': connection_uuid
 			}
 		)
 		retval = self._recvmsg()
@@ -72,26 +72,26 @@ class WebKitInspector(WIRService):
 	# get info about an applications e.g. pages in mobilesafari
 	def forwardGetListing(self, connection_uuid, appid):
 		self._sendmsg(
-			u'_rpc_forwardGetListing:',
+			'_rpc_forwardGetListing:',
 			{
-				u'WIRConnectionIdentifierKey': connection_uuid,
-				u'WIRApplicationIdentifierKey': appid
+				'WIRConnectionIdentifierKey': connection_uuid,
+				'WIRApplicationIdentifierKey': appid
 			}
 		)
 		retval = self._recvmsg()
-		while retval[0] != u'_rpc_applicationSentListing:':
+		while retval[0] != '_rpc_applicationSentListing:':
 			retval = self._recvmsg()
 		return retval[1]
 
 	# highlight a webview page
 	def forwardIndicateWebView(self, connection_uuid, appid, pageid, enable):
 		self._sendmsg(
-			u'_rpc_forwardIndicateWebView:',
+			'_rpc_forwardIndicateWebView:',
 			{
-				u'WIRConnectionIdentifierKey': connection_uuid,
-				u'WIRApplicationIdentifierKey': appid,
-				u'WIRPageIdentifierKey': pageid,
-				u'WIRIndicateEnabledKey': enable
+				'WIRConnectionIdentifierKey': connection_uuid,
+				'WIRApplicationIdentifierKey': appid,
+				'WIRPageIdentifierKey': pageid,
+				'WIRIndicateEnabledKey': enable
 			}
 		)
 		return self._recvmsg()[1]
@@ -99,12 +99,12 @@ class WebKitInspector(WIRService):
 	# setup a webkit protocol connection
 	def forwardSocketSetup(self, connection_uuid, appid, pageid, sender_uuid):
 		self._sendmsg(
-			u'_rpc_forwardSocketSetup:',
+			'_rpc_forwardSocketSetup:',
 			{ 
-				u'WIRConnectionIdentifierKey':  connection_uuid,
-				u'WIRApplicationIdentifierKey': appid,
-				u'WIRPageIdentifierKey': pageid,
-				u'WIRSenderKey': sender_uuid
+				'WIRConnectionIdentifierKey':  connection_uuid,
+				'WIRApplicationIdentifierKey': appid,
+				'WIRPageIdentifierKey': pageid,
+				'WIRSenderKey': sender_uuid
 			}
 		)
 		#self._recvmsg() # throw away the forwardGetListing response
@@ -112,31 +112,31 @@ class WebKitInspector(WIRService):
 	# send webkit protocol message
 	def forwardSocketData(self, connection_uuid, appid, pageid, sender_uuid, msg):
 		self._sendmsg(
-			u'_rpc_forwardSocketData:',
+			'_rpc_forwardSocketData:',
 			{ 
-				u'WIRConnectionIdentifierKey': connection_uuid,
-				u'WIRApplicationIdentifierKey': appid,
-				u'WIRPageIdentifierKey': pageid,
-				u'WIRSenderKey': sender_uuid,
-				u'WIRSocketDataKey': msg
+				'WIRConnectionIdentifierKey': connection_uuid,
+				'WIRApplicationIdentifierKey': appid,
+				'WIRPageIdentifierKey': pageid,
+				'WIRSenderKey': sender_uuid,
+				'WIRSocketDataKey': msg
 			}
 		)
 
 	def forwardDidClose(self, connection_uuid, appid, pageid, sender_uuid):
 		self.sendmsg(
-			u'_rpc_forwardDidClose:',
+			'_rpc_forwardDidClose:',
 			{ 
-				u'WIRConnectionIdentifierKey': connection_uuid,
-				u'WIRApplicationIdentifierKey': appid,
-				u'WIRPageIdentifierKey': pageid,
-				u'WIRSenderKey': sender_uuid
+				'WIRConnectionIdentifierKey': connection_uuid,
+				'WIRApplicationIdentifierKey': appid,
+				'WIRPageIdentifierKey': pageid,
+				'WIRSenderKey': sender_uuid
 			}
 		)
-		print self._recvmsg()
+		print(self._recvmsg())
 
 	def navigate(self, url):
 		conn = self.uniqueid()
-		app = u'com.apple.mobilesafari'
+		app = 'com.apple.mobilesafari'
 
 		self.reportIdentifier(conn)
 		# XXX: why does lockdownd show as a connected app?
@@ -145,30 +145,30 @@ class WebKitInspector(WIRService):
 		session = self.uniqueid()
 		listing = self.forwardIndicateWebView(conn, app, 1, session)
 
-		pages = listing[u'WIRListingKey']
+		pages = listing['WIRListingKey']
 		ident = 1 #int(pages.values()[0][u'WIRPageIdentifierKey'])
 		self.forwardSocketSetup(conn, app, ident, session)
 		self.forwardSocketData(conn, app, ident, session, {
-			u'id': 1,
-			u'method': u'Inspector.enable'
+			'id': 1,
+			'method': 'Inspector.enable'
 		})
 		self.forwardSocketData(conn, app, ident, session, {
-			u'id': 2,
-			u'method': u'CSS.getSupportedCSSProperties'
+			'id': 2,
+			'method': 'CSS.getSupportedCSSProperties'
 		})
 		self.forwardSocketData(conn, app, ident, session, {
-			u'id': 3,
-			u'method': u'Page.enable'
+			'id': 3,
+			'method': 'Page.enable'
 		})
 		self.forwardSocketData(conn, app, ident, session, {
-			u'id': 4,
-			u'method': u'Network.enable'
+			'id': 4,
+			'method': 'Network.enable'
 		})		
 		self.forwardSocketData(conn, app, ident, session, {
-			u'id': 5,
-			u'method': u'Page.navigate',
-			u'params': {
-				u'url': (
+			'id': 5,
+			'method': 'Page.navigate',
+			'params': {
+				'url': (
 					url
 				)
 			}
@@ -186,14 +186,14 @@ def register_argparse_webinspector(cmdargs):
 
 	def cmd_load(args, dev):
 		mimetype = mimetypes.guess_type(args.path)
-		f = open(args.path, u'rb')
+		f = open(args.path, 'rb')
 		content = f.read()
 		f.close()
 		
 		# wakeup device
 		# switch to safari?
 		wi = WebKitInspector(dev)
-		wi.navigate(u'data:' + mimetype[0] + u';base64,' + base64.b64encode(content))
+		wi.navigate('data:' + mimetype[0] + ';base64,' + base64.b64encode(content))
 		wi.disconnect()
 
 
@@ -201,35 +201,35 @@ def register_argparse_webinspector(cmdargs):
 		# wakeup device
 		# switch to safari?
 		wi = WebKitInspector(dev)
-		wi.navigate(args.url.decode(u'utf-8'))
+		wi.navigate(args.url.decode('utf-8'))
 		wi.disconnect()
 
 	webparser = cmdargs.add_parser(
-		u'web', 
-		help=u'webinspector actions; requires settings->safari->advanced->web-inspector be enabled'
+		'web', 
+		help='webinspector actions; requires settings->safari->advanced->web-inspector be enabled'
 	)
 	webcmd = webparser.add_subparsers()
 
 	# load command
 	loadcmd = webcmd.add_parser(
-		u'load',
-		help=u'loads a single safari window with the specified file'
+		'load',
+		help='loads a single safari window with the specified file'
 	)
 	loadcmd.add_argument(
-		u'path',
-		help=u'the file to load (as a data: url) into the first page of mobilesafari'
+		'path',
+		help='the file to load (as a data: url) into the first page of mobilesafari'
 	)
 	loadcmd.set_defaults(func=cmd_load)
 
 
 	# navigate command
 	navigatecmd = webcmd.add_parser(
-		u'navigate',
-		help=u'navigate a single safari window with the specified url'
+		'navigate',
+		help='navigate a single safari window with the specified url'
 	)
 	navigatecmd.add_argument(
-		u'url',
-		help=u'the url to navigate the first page of mobilesafari to'
+		'url',
+		help='the url to navigate the first page of mobilesafari to'
 	)
 	navigatecmd.set_defaults(func=cmd_navigate)
 

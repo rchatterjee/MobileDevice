@@ -22,8 +22,8 @@
 # SOFTWARE.
 
 
-from MobileDevice import *
-from plistservice import *
+from .MobileDevice import *
+from .plistservice import *
 
 
 class WIRService(PlistService):
@@ -32,30 +32,30 @@ class WIRService(PlistService):
 
 	def _sendmsg(self, selector, args):
 		wi = dict_to_plist_encoding({
-			u'__selector': selector,
-			u'__argument': args
+			'__selector': selector,
+			'__argument': args
 		})
 		step = 8096 # split very big messages
 		start = 0
 		end = step
 		while end < len(wi):
 			PlistService._sendmsg(self, {
-				u'WIRPartialMessageKey': wi[start:end]
+				'WIRPartialMessageKey': wi[start:end]
 			})
 			start = end
 			end += step
 		PlistService._sendmsg(self, {
-			u'WIRFinalMessageKey': wi[start:end]
+			'WIRFinalMessageKey': wi[start:end]
 		})
 
 	def _recvmsg(self):
 		wi = ''
 		wimsg = PlistService._recvmsg(self)
-		while wimsg and u'WIRPartialMessageKey' in wimsg:
-			wi += wimsg[u'WIRPartialMessageKey']
+		while wimsg and 'WIRPartialMessageKey' in wimsg:
+			wi += wimsg['WIRPartialMessageKey']
 			wimsg = PlistService._recvmsg(self)
-		wi += wimsg[u'WIRFinalMessageKey']
+		wi += wimsg['WIRFinalMessageKey']
 		rpc = dict_from_plist_encoding(wi)
-		return (rpc[u'__selector'], rpc[u'__argument'])
+		return (rpc['__selector'], rpc['__argument'])
 
 

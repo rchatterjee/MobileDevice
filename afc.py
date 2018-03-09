@@ -22,8 +22,8 @@
 # SOFTWARE.
 
 
-from MobileDevice import *
-from amdevice import *
+from .MobileDevice import *
+from .amdevice import *
 from ctypes import *
 from posixpath import *
 import stat
@@ -41,36 +41,36 @@ def _stat_from_afcdict(afcdict):
 		if name.value is None or value.value is None: 
 			break
 
-		strname = name.value.decode(u'utf-8')
-		if strname == u'st_ifmt':
+		strname = name.value.decode('utf-8')
+		if strname == 'st_ifmt':
 			modes = {
-				u'S_IFSOCK': stat.S_IFSOCK,
-				u'S_IFLNK': stat.S_IFLNK,
-				u'S_IFREG': stat.S_IFREG,
-				u'S_IFBLK': stat.S_IFBLK,
-				u'S_IFDIR': stat.S_IFDIR,
-				u'S_IFCHR': stat.S_IFCHR,
-				u'S_IFIFO': stat.S_IFIFO
+				'S_IFSOCK': stat.S_IFSOCK,
+				'S_IFLNK': stat.S_IFLNK,
+				'S_IFREG': stat.S_IFREG,
+				'S_IFBLK': stat.S_IFBLK,
+				'S_IFDIR': stat.S_IFDIR,
+				'S_IFCHR': stat.S_IFCHR,
+				'S_IFIFO': stat.S_IFIFO
 			}
-			v = value.value.decode(u'utf-8')
+			v = value.value.decode('utf-8')
 			if v not in modes:
-				raise RuntimeError(u'Unknown file type:', v)
+				raise RuntimeError('Unknown file type:', v)
 			setattr(
 				retval, 
 				strname,
 				modes[v]
 			)
-		elif strname == u'st_mtime' or strname == u'st_birthtime':
+		elif strname == 'st_mtime' or strname == 'st_birthtime':
 			setattr(
 				retval, 
 				strname, 
-				value.value.decode(u'utf-8')[:10]
+				value.value.decode('utf-8')[:10]
 			)
 		else:
 			setattr(
 				retval, 
 				strname, 
-				value.value.decode(u'utf-8')
+				value.value.decode('utf-8')
 			)
 	return retval
 
@@ -80,11 +80,11 @@ class AFCFile(object):
 	def __init__(self, afc, path, mode):
 		self.afc_con = afc.get_con()
 		self.mode = 0
-		if mode.find(u'r') != -1:
+		if mode.find('r') != -1:
 			self.mode |= 0x1
-		if mode.find(u'w') != -1:
+		if mode.find('w') != -1:
 			self.mode |= 0x2
-		if mode.find(u'a') != -1:
+		if mode.find('a') != -1:
 			self.mode |= 0x3
 
 		self.f = AFCFileRef()
@@ -92,12 +92,12 @@ class AFCFile(object):
 
 		if AFCFileRefOpen(
 				self.afc_con,
-				path.encode(u'utf-8'),
+				path.encode('utf-8'),
 				self.mode,
 				byref(self.f)) != MDERR_OK:
-			raise IOError(u'Unable to open file:', path, mode)
+			raise IOError('Unable to open file:', path, mode)
 		self.closed = False
-		if mode.find(u'a') != -1:
+		if mode.find('a') != -1:
 			size = int(afc.lstat(path).st_size)
 			self.seek(size)
 
@@ -128,7 +128,7 @@ class AFCFile(object):
 				offset,
 				whence)
 		if res != MDERR_OK:
-			raise ValueError(u'Unable to set file location %s' % res)
+			raise ValueError('Unable to set file location %s' % res)
 
 	def seekable(self):
 		return True
@@ -136,14 +136,14 @@ class AFCFile(object):
 	def tell(self):
 		idx = CFIndex()
 		if AFCFileRefTell(self.afc_con, self.f, byref(idx)) != MDERR_OK:
-			raise ValueError(u'Unable to read file location')
+			raise ValueError('Unable to read file location')
 		return idx.value
 
 	def truncate(size=None):
 		if size is None:
 			size = self.tell()
 		if AFCFileRefSetFileSize(self.afc_con, self.f, size) != MDERR_OK:
-			raise ValueError(u'Unable to truncate file')
+			raise ValueError('Unable to truncate file')
 
 	def writable(self):
 		return self.mode & 0x2
@@ -153,11 +153,11 @@ class AFCFile(object):
 
 	def lock(self):
 		if AFCFileRefLock(self.afc_con, self.f) != MDERR_OK:
-			raise ValueError(u'Unable to lock file')
+			raise ValueError('Unable to lock file')
 
 	def unlock(self):
 		if AFCFileRefUnlock(self.afc_con, self.f) != MDERR_OK:
-			raise ValueError(u'Unable to unlock file')
+			raise ValueError('Unable to unlock file')
 
 	def read(self, n=-1):
 		retval = ''
@@ -192,7 +192,7 @@ class AFCFile(object):
 			buf,
 			buflen
 		) != MDERR_OK:
-			raise RuntimeError(u'Error during write')
+			raise RuntimeError('Error during write')
 
 
 class AFC(object):
@@ -200,7 +200,7 @@ class AFC(object):
 		self.s = s
 		self.afc_con = AFCConnectionRef()
 		if AFCConnectionOpen(self.s, 0, byref(self.afc_con)) != MDERR_OK:
-			raise RuntimeError(u'Unable to open AFC connection')
+			raise RuntimeError('Unable to open AFC connection')
 
 	def get_con(self):
 		return self.afc_con
@@ -212,10 +212,10 @@ class AFC(object):
 		if AFCLinkPath(
 				self.afc_con, 
 				1, # hard
-				target.encode(u'utf-8'),
-				link_name.encode(u'utf-8')
+				target.encode('utf-8'),
+				link_name.encode('utf-8')
 			) != MDERR_OK:
-			raise OSError(u'Unable to create hard link:', target, link_name)
+			raise OSError('Unable to create hard link:', target, link_name)
 		return True
 
 	# typically you get a class with the following members
@@ -224,10 +224,10 @@ class AFC(object):
 		info = AFCDictionaryRef()
 		if AFCFileInfoOpen(
 				self.afc_con, 
-				path.encode(u'utf-8'), 
+				path.encode('utf-8'), 
 				byref(info)
 			) != MDERR_OK:
-			raise OSError(u'Unable to open path:', path)
+			raise OSError('Unable to open path:', path)
 		retval = _stat_from_afcdict(info)
 		AFCKeyValueClose(info)
 		return retval
@@ -236,18 +236,18 @@ class AFC(object):
 		afc_dir = AFCDirectoryRef()
 		if AFCDirectoryOpen(
 				self.afc_con, 
-				path.encode(u'utf-8'),
+				path.encode('utf-8'),
 				byref(afc_dir)
 			) != MDERR_OK:
-			raise OSError(u'Unable to open AFC directory:', path)
+			raise OSError('Unable to open AFC directory:', path)
 
 		retval = []
 		name = c_char_p()
 		while AFCDirectoryRead(self.afc_con, afc_dir, byref(name)) == MDERR_OK:
 			if name.value is None:
 				break
-			path = name.value.decode(u'utf-8')
-			if path != u'.' and path != u'..':
+			path = name.value.decode('utf-8')
+			if path != '.' and path != '..':
 				retval.append(path)
 		# XXX do we need to free buffer on error
 		AFCDirectoryClose(self.afc_con, afc_dir)
@@ -255,15 +255,15 @@ class AFC(object):
 
 	def mkdir(self, path):
 		if AFCDirectoryCreate(self.afc_con, path) != MDERR_OK:
-			raise OSError(u'Unable to create directory:', path)
+			raise OSError('Unable to create directory:', path)
 
 	def makedirs(self, path):
 		raise NotImplementedError()
 
 	def readlink(self, path):
 		s = self.lstat(path)
-		if not hasattr(s, u'LinkTarget'):
-			raise OSError(u'Path is not symlink:', path)
+		if not hasattr(s, 'LinkTarget'):
+			raise OSError('Path is not symlink:', path)
 		return s.LinkTarget
 
 	def remove(self, path):
@@ -275,10 +275,10 @@ class AFC(object):
 	def rename(self, src, dst):
 		if AFCRenamePath(
 				self.afc_con, 
-				src.encode(u'utf-8'), 
-				dst.encode(u'utf-8')
+				src.encode('utf-8'), 
+				dst.encode('utf-8')
 			) != MDERR_OK:
-			raise OSError(u'Unable to rename file:', src, dst)
+			raise OSError('Unable to rename file:', src, dst)
 
 	def renames(self, old, new):
 		raise NotImplementedError()
@@ -288,7 +288,7 @@ class AFC(object):
 
 	def stat(self, path):
 		retval = self.lstat(path)
-		if hasattr(retval, u'LinkTarget'):
+		if hasattr(retval, 'LinkTarget'):
 			# its a symlink - so stat the link target
 			retval = self.lstat(retval.LinkTarget)
 		return retval
@@ -297,15 +297,15 @@ class AFC(object):
 		if AFCLinkPath(
 				self.afc_con, 
 				2, # soft 
-				target.encode(u'utf-8'),
-				link_name.encode(u'utf-8')
+				target.encode('utf-8'),
+				link_name.encode('utf-8')
 			) != MDERR_OK:
-			raise OSError(u'Unable to create symlink:', target, link_name)
+			raise OSError('Unable to create symlink:', target, link_name)
 		return True
 
 	def unlink(self, path):
-		if AFCRemovePath(self.afc_con, path.encode(u'utf-8')) != MDERR_OK:
-			raise OSError(u'Unable to remove file:', path)
+		if AFCRemovePath(self.afc_con, path.encode('utf-8')) != MDERR_OK:
+			raise OSError('Unable to remove file:', path)
 
 	def open(self, path, mode):
 		return AFCFile(self, path, mode)

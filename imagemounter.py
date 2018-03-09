@@ -22,10 +22,10 @@
 # SOFTWARE.
 
 
-from amdevice import *
+from .amdevice import *
 import os.path
 import os
-from plistservice import *
+from .plistservice import *
 
 
 class ImageMounter(object):
@@ -36,7 +36,7 @@ class ImageMounter(object):
 		pass
 
 	def mount(self, image_path=None, progress=None):
-		u'''Mounts a disk image on the device.
+		'''Mounts a disk image on the device.
 
 		Arguments:
 		image -- the path to the image to load; the .signature file must be 
@@ -54,15 +54,15 @@ class ImageMounter(object):
 		if image_path is None:
 			image_path = self.dev.find_developer_disk_image_path()
 
-		sigpath = image_path + u'.signature'
-		f = open(sigpath, u'rb')
+		sigpath = image_path + '.signature'
+		f = open(sigpath, 'rb')
 		sig = f.read()
 		f.close()
 
 		cfpath = CFTypeFrom(image_path)
 		cfoptions = CFTypeFrom({
-			u'ImageType': u'Developer', # XXX add support for other image types
-			u'ImageSignature': sig
+			'ImageType': 'Developer', # XXX add support for other image types
+			'ImageSignature': sig
 		})
 		cb = AMDeviceProgressCallback(callback)
 		if progress is not None:
@@ -78,7 +78,7 @@ class ImageMounter(object):
 		CFRelease(cfpath)
 		CFRelease(cfoptions)
 		if err != MDERR_OK and (err & 0xFFFFFFFF) != 0xe8000076: # already mounted
-			raise RuntimeError(u'Unable to mount disk image', err)
+			raise RuntimeError('Unable to mount disk image', err)
 
 
 def register_argparse_mount(cmdargs):
@@ -93,30 +93,30 @@ def register_argparse_mount(cmdargs):
 
 	def cmd_mountcustom(args, dev):
 		im = ImageMounter(dev)
-		im.mount(args.path.decode(u'utf-8'))
+		im.mount(args.path.decode('utf-8'))
 		im.disconnect()		
 
 	mountparser = cmdargs.add_parser(
-		u'mount',
-		help=u'mounts a disk image'
+		'mount',
+		help='mounts a disk image'
 	)
 	mountcmds = mountparser.add_subparsers()
 
 	# mount developer disk image
 	devcmd = mountcmds.add_parser(
-		u'dev',
-		help=u'mounts the best developer disk image avaliable for the device'
+		'dev',
+		help='mounts the best developer disk image avaliable for the device'
 	)
 	devcmd.set_defaults(func=cmd_mountdev)
 
 	# mount custom disk image
 	cuscmd = mountcmds.add_parser(
-		u'custom',
-		help=u'mounts the supplied disk image; .signature file must be alongside'
+		'custom',
+		help='mounts the supplied disk image; .signature file must be alongside'
 	)
 	cuscmd.add_argument(
-		u'path',
-		help=u'the path to the .dmg; we expect a .signature alongside'
+		'path',
+		help='the path to the .dmg; we expect a .signature alongside'
 	)
 	cuscmd.set_defaults(func=cmd_mountcustom)
 

@@ -22,24 +22,24 @@
 # SOFTWARE.
 
 
-from MobileDevice import *
-from amdevice import *
-from plistservice import *
+from .MobileDevice import *
+from .amdevice import *
+from .plistservice import *
 
 
 class Diagnostics(PlistService):
-	u'''Communicates with the diagnostic service and allows retrival of 
+	'''Communicates with the diagnostic service and allows retrival of 
 	diagnostic information
 	'''
 
-	TYPE_ALL = u'All'
-	TYPE_WIFI = u'WiFi'
-	TYPE_GASGAUGE = u'GasGauge'
-	TYPE_NAND = u'NAND'
+	TYPE_ALL = 'All'
+	TYPE_WIFI = 'WiFi'
+	TYPE_GASGAUGE = 'GasGauge'
+	TYPE_NAND = 'NAND'
 
-	ACTION_WAIT_FOR_DISCONNECT = u'WaitForDisconnect'
-	ACTION_DISPLAY_PASS = u'DisplayPass'
-	ACTION_DISPLAY_FAIL = u'DisplayFail'
+	ACTION_WAIT_FOR_DISCONNECT = 'WaitForDisconnect'
+	ACTION_DISPLAY_PASS = 'DisplayPass'
+	ACTION_DISPLAY_FAIL = 'DisplayFail'
 
 	gestalt_names = [
 	]
@@ -57,7 +57,7 @@ class Diagnostics(PlistService):
 
 	def _action(self, name, actions):
 		msg = {
-			u'Request': name
+			'Request': name
 		}
 		for action in actions:
 			msg[action] = True
@@ -66,56 +66,56 @@ class Diagnostics(PlistService):
 
 	def _chkresult(self, result):
 		retval = False
-		if u'Status' in result and result[u'Status'] == u'Success':
+		if 'Status' in result and result['Status'] == 'Success':
 			retval = True
 		return retval
 
 	def sleep(self):
-		u'''Sends the device to sleep; disconnecting it from the host'''
-		self._sendmsg({u'Request': u'Sleep'})
+		'''Sends the device to sleep; disconnecting it from the host'''
+		self._sendmsg({'Request': 'Sleep'})
 		return self._chkresult(self._recvmsg())
 
 	def restart(self, actions=[]):
-		u'''Restarts the device'''
-		return self._action(u'Restart', actions)
+		'''Restarts the device'''
+		return self._action('Restart', actions)
 
 	def shutdown(self, actions=[]):
-		u'''Shutsdownt the host'''
-		return self._action(u'Shutdown', actions)
+		'''Shutsdownt the host'''
+		return self._action('Shutdown', actions)
 
 	def diagnostics(self, typ):
-		u'''Retrieves diagnostic information from the device; i.e. gasguage,
+		'''Retrieves diagnostic information from the device; i.e. gasguage,
 		wifi, nand.
 
 		Arguments:
 		typ -- one of the ACTION_* defines
 		'''
 		retval = None
-		self._sendmsg({u'Request': typ})
+		self._sendmsg({'Request': typ})
 		msg = self._recvmsg()
 		if self._chkresult(msg):
-			retval = msg[u'Diagnostics']
+			retval = msg['Diagnostics']
 		return retval
 
 	# look in com.apple.mobilegestalt.plist for values
 	def mobilegestalt(self, keys):
-		u'''Retrieves mobile gestalt values
+		'''Retrieves mobile gestalt values
 
 		Arguments:
 		keys -- an array of keys to retrieve
 		'''
 		self._sendmsg({
-			u'Request': u'MobileGestalt',
-			u'MobileGestaltKeys': keys
+			'Request': 'MobileGestalt',
+			'MobileGestaltKeys': keys
 		})
 		msg = self._recvmsg()
 		if self._chkresult(msg):
-			retval = msg[u'Diagnostics'][u'MobileGestalt']
+			retval = msg['Diagnostics']['MobileGestalt']
 		return retval
 
 	# IODeviceTree, IOPower, IOService
-	def ioregistry(self, plane=u'IOService', name=None, cls=None):
-		u'''Retrieves IORegistry keys and values
+	def ioregistry(self, plane='IOService', name=None, cls=None):
+		'''Retrieves IORegistry keys and values
 
 		Arguments:
 		plane -- a IOReg plane name; IODeviceTree, IOPower, IOService
@@ -123,18 +123,18 @@ class Diagnostics(PlistService):
 		cls -- the class of the key to retrieve
 		'''
 		msg = {
-			u'Request': u'IORegistry',
-			u'CurrentPlane': plane
+			'Request': 'IORegistry',
+			'CurrentPlane': plane
 		}
 		if name is not None:
-			msg[u'EntryName'] = name
+			msg['EntryName'] = name
 		if cls is not None:
-			msg[u'EntryClass'] = cls
+			msg['EntryClass'] = cls
 
 		self._sendmsg(msg)
 		msg = self._recvmsg()
 		if self._chkresult(msg):
-			retval = msg[u'Diagnostics']
+			retval = msg['Diagnostics']
 		return retval
 
 
@@ -143,46 +143,46 @@ def register_argparse_diag(cmdargs):
 	import pprint
 	import sys
 
-	def ioreg_dmp(d, pad=u'  '):
+	def ioreg_dmp(d, pad='  '):
 		# XXX should really adjust to get rid of all the -2's
 		if isinstance(d, list):
-			sys.stdout.write(u'[\n')
+			sys.stdout.write('[\n')
 			for i in range(len(d)):
 				sys.stdout.write(pad)
-				ioreg_dmp(d[i], pad + u'  ')
-			sys.stdout.write(pad[:-2] + u']\n')
+				ioreg_dmp(d[i], pad + '  ')
+			sys.stdout.write(pad[:-2] + ']\n')
 		elif isinstance(d, dict):
 			i = 0
-			if u'regEntry' in d:
+			if 'regEntry' in d:
 				# its a reg entry
-				inheritance = d[u'inheritance'].replace(u' : ', u':')
+				inheritance = d['inheritance'].replace(' : ', ':')
 				sys.stdout.write(
-					u'+-o ' + d[u'name'] + u'  <class ' + inheritance + u', ' + d[u'state'] + u'>\n'
+					'+-o ' + d['name'] + '  <class ' + inheritance + ', ' + d['state'] + '>\n'
 				)
 				op = pad
-				if len(d[u'children']) > 0:
-					pad += u'| '
+				if len(d['children']) > 0:
+					pad += '| '
 				else:
-					pad += u'  '
+					pad += '  '
 				sys.stdout.write(pad)
-				ioreg_dmp(d[u'properties'], pad + u'  ')
-				sys.stdout.write(pad + u'\n')
+				ioreg_dmp(d['properties'], pad + '  ')
+				sys.stdout.write(pad + '\n')
 				i = 0
-				for c in d[u'children']:
-					if i == len(d[u'children'])-1:
-						pad = pad[:-2] + u'  '
+				for c in d['children']:
+					if i == len(d['children'])-1:
+						pad = pad[:-2] + '  '
 					sys.stdout.write(pad[:-2])
 					ioreg_dmp(c, pad)
 					i += 1
 			else:
 				# something else?
-				sys.stdout.write(u'{\n')
-				for k, v in d.iteritems():
-					sys.stdout.write(pad + u'"' + k + u'" = ')
-					ioreg_dmp(v, pad + u'  ')
-				sys.stdout.write(pad[:-2] + u'}\n')
-		elif isinstance(d, unicode):
-			sys.stdout.write(u'"' + d + u'"\n')
+				sys.stdout.write('{\n')
+				for k, v in d.items():
+					sys.stdout.write(pad + '"' + k + '" = ')
+					ioreg_dmp(v, pad + '  ')
+				sys.stdout.write(pad[:-2] + '}\n')
+		elif isinstance(d, str):
+			sys.stdout.write('"' + d + '"\n')
 		elif isinstance(d, str):
 			# dont know why but some strings name/inheritence etc come back as 
 			# CFData rather then CFString's - so we'll try to convert; if it 
@@ -199,21 +199,21 @@ def register_argparse_diag(cmdargs):
 					isdata = True
 					break
 			if isdata:
-				sys.stdout.write(d.encode(u'hex') + u'\n')
+				sys.stdout.write(d.encode('hex') + '\n')
 			else:
-				sys.stdout.write(u'"' + d + u'"\n')				
-		elif isinstance(d, (int, long, float, complex)):
-			sys.stdout.write(d.__str__() + u'\n')
+				sys.stdout.write('"' + d + '"\n')				
+		elif isinstance(d, (int, float, complex)):
+			sys.stdout.write(d.__str__() + '\n')
 		else:
-			print type(d)
+			print(type(d))
 			pprint.pprint(d)
 
 	def cmd_gestalt(args, dev):
 		diag = Diagnostics(dev)
 		if args.name is not None:
-			print(diag.mobilegestalt([args.name.decode(u'utf-8')]))
+			print((diag.mobilegestalt([args.name.decode('utf-8')])))
 		else:
-			print(diag.mobilegestalt(Diagnostics.gestalt_names))
+			print((diag.mobilegestalt(Diagnostics.gestalt_names)))
 		diag.disconnect()
 
 	def cmd_all(args, dev):
@@ -223,17 +223,17 @@ def register_argparse_diag(cmdargs):
 
 	def cmd_ioreg(args, dev):
 		diag = Diagnostics(dev)
-		plane = u'IOService'
+		plane = 'IOService'
 		name = None
 		cls = None
 		# XXX check the name/cls params actually work
 		if args.plane is not None:
-			plane = args.plane.decode(u'utf-8')
+			plane = args.plane.decode('utf-8')
 		if args.name is not None:
-			name = args.name.decode(u'utf-8')
+			name = args.name.decode('utf-8')
 		if args.cls is not None:
-			cls = args.cls.decode(u'utf-8')
-		ioreg_dmp(diag.ioregistry(plane, name, cls)[u'IORegistry'])
+			cls = args.cls.decode('utf-8')
+		ioreg_dmp(diag.ioregistry(plane, name, cls)['IORegistry'])
 		diag.disconnect()		
 
 	def cmd_sleep(args, dev):
@@ -251,7 +251,7 @@ def register_argparse_diag(cmdargs):
 
 	def cmd_shutdown(args, dev):
 		diag = Diagnostics(dev)
-		print args.quick
+		print(args.quick)
 		if args.quick:
 			diag.shutdown([Diagnostics.ACTION_DISPLAY_FAIL])
 		else:
@@ -260,85 +260,85 @@ def register_argparse_diag(cmdargs):
 
 	# diag command
 	diagparser = cmdargs.add_parser(
-		u'diag', 
-		help=u'retrieves diagnostic info; includes state changes like reboot, sleep etc'
+		'diag', 
+		help='retrieves diagnostic info; includes state changes like reboot, sleep etc'
 	)
 	diagcmd = diagparser.add_subparsers()
 
 	# mobile gestalt command
 	gestaltcmd = diagcmd.add_parser(
-		u'gestalt',
-		help=u'retrieves mobile gestalt values'
+		'gestalt',
+		help='retrieves mobile gestalt values'
 	)
 	gestaltcmd.add_argument(
-		u'name',
-		nargs=u'?',
-		help=u'the name of the gestalt value to retrieve'
+		'name',
+		nargs='?',
+		help='the name of the gestalt value to retrieve'
 	)
 	gestaltcmd.set_defaults(func=cmd_gestalt)
 
 	# all command
 	allcmd = diagcmd.add_parser(
-		u'all',
-		help=u'retrieves all diagnostic info; gasguage, wifi and nand'
+		'all',
+		help='retrieves all diagnostic info; gasguage, wifi and nand'
 	)
 	allcmd.set_defaults(func=cmd_all)
 
 	# ioreg command
 	ioregcmd = diagcmd.add_parser(
-		u'ioreg',
-		help=u'retrieves ioregistry information from the device; defaults to the IOService plane'
+		'ioreg',
+		help='retrieves ioregistry information from the device; defaults to the IOService plane'
 	)
 	ioregcmd.add_argument(
-		u'-p',
-		metavar=u'plane',
-		dest=u'plane',
-		help=u'the ioregistry plane to retrieve; IODeviceTree, IOPower, IOService etc'
+		'-p',
+		metavar='plane',
+		dest='plane',
+		help='the ioregistry plane to retrieve; IODeviceTree, IOPower, IOService etc'
 	)
 	ioregcmd.add_argument(
-		u'-n',
-		metavar=u'name',
-		dest=u'name',
-		help=u'ioregistry entry name to retrieve'
+		'-n',
+		metavar='name',
+		dest='name',
+		help='ioregistry entry name to retrieve'
 	)
 	ioregcmd.add_argument(
-		u'-c',
-		metavar=u'class',
-		dest=u'cls',
-		help=u'ioregistry entry class to retrieve'
+		'-c',
+		metavar='class',
+		dest='cls',
+		help='ioregistry entry class to retrieve'
 	)
 	ioregcmd.set_defaults(func=cmd_ioreg)
 
 	# sleep command
 	sleepcmd = diagcmd.add_parser(
-		u'sleep',
-		help=u'put the device to sleep'
+		'sleep',
+		help='put the device to sleep'
 	)
 	sleepcmd.set_defaults(func=cmd_sleep)
 
 	# restart command
 	restartcmd = diagcmd.add_parser(
-		u'restart',
-		help=u'restarts the device'
+		'restart',
+		help='restarts the device'
 	)
 	restartcmd.add_argument(
-		u'-q',
-		dest=u'quick',
-		action=u'store_true',
-		help=u'restarts quickly - without properly shutting down'
+		'-q',
+		dest='quick',
+		action='store_true',
+		help='restarts quickly - without properly shutting down'
 	)	
 	restartcmd.set_defaults(func=cmd_restart)
 
 	# shutdown command
 	shutdowncmd = diagcmd.add_parser(
-		u'shutdown',
-		help=u'shutsdown the device'
+		'shutdown',
+		help='shutsdown the device'
 	)
 	shutdowncmd.add_argument(
-		u'-q',
-		dest=u'quick',
-		action=u'store_true',
-		help=u'shutsdown quickly'
+		'-q',
+		dest='quick',
+		action='store_true',
+		help='shutsdown quickly'
 	)	
 	shutdowncmd.set_defaults(func=cmd_shutdown)
 

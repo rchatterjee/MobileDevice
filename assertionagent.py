@@ -22,32 +22,32 @@
 # SOFTWARE.
 
 
-from amdevice import *
-from plistservice import *
+from .amdevice import *
+from .plistservice import *
 
 
 class AssertionAgent(PlistService):
 
-	WIRELESS_SYNC = u'AMDPowerAssertionTypeWirelessSync'
-	USER_IDLE_SLEEP = u'PreventUserIdleSystemSleep'
-	SYSTEM_SLEEP = u'PreventSystemSleep'
+	WIRELESS_SYNC = 'AMDPowerAssertionTypeWirelessSync'
+	USER_IDLE_SLEEP = 'PreventUserIdleSystemSleep'
+	SYSTEM_SLEEP = 'PreventSystemSleep'
 
 	def __init__(self, amdevice):
-		PlistService.__init__(self, amdevice, [u'com.apple.mobile.assertion_agent'])
+		PlistService.__init__(self, amdevice, ['com.apple.mobile.assertion_agent'])
 
 	def power_assert(self, type, name, timeout, details=None):
 		msg = {
-			u'CommandKey': u'CommandCreateAssertion',
-			u'AssertionTypeKey': type,
-			u'AssertionNameKey': name,
-			u'AssertionTimeoutKey': timeout
+			'CommandKey': 'CommandCreateAssertion',
+			'AssertionTypeKey': type,
+			'AssertionNameKey': name,
+			'AssertionTimeoutKey': timeout
 		}
 
 		if details is not None:
-			msg[u'AssertionDetailKey'] = details
+			msg['AssertionDetailKey'] = details
 
 		self._sendmsg(msg)
-		print self._recvmsg()
+		print(self._recvmsg())
 
 
 def register_argparse_assertionagent(cmdargs):
@@ -59,7 +59,7 @@ def register_argparse_assertionagent(cmdargs):
 		ass = AssertionAgent(dev)
 		typ = None
 		details = None
-		timeout = int(args.timeout.decode(u'utf-8'))
+		timeout = int(args.timeout.decode('utf-8'))
 		if args.w:
 			typ = AssertionAgent.WIRELESS_SYNC
 		elif args.u:
@@ -67,10 +67,10 @@ def register_argparse_assertionagent(cmdargs):
 		elif args.s:
 			typ = AssertionAgent.SYSTEM_SLEEP
 		if args.details:
-			details = args.details.decode(u'utf-8')
+			details = args.details.decode('utf-8')
 		ass.power_assert(
 			typ, 
-			args.name.decode(u'utf-8'), 
+			args.name.decode('utf-8'), 
 			timeout, 
 			details
 		)
@@ -78,37 +78,37 @@ def register_argparse_assertionagent(cmdargs):
 		ass.disconnect()
 
 	assertcmd = cmdargs.add_parser(
-		u'assert', 
-		help=u'perform a power management assert'
+		'assert', 
+		help='perform a power management assert'
 	)
 	me = assertcmd.add_mutually_exclusive_group(required=True)
 	me.add_argument(
-		u'-w',
-		action=u'store_true',
-		help=u'perform a wireless sync assertion'
+		'-w',
+		action='store_true',
+		help='perform a wireless sync assertion'
 	)
 	me.add_argument(
-		u'-u',
-		action=u'store_true',
-		help=u'perform a user idle sleep assertion'
+		'-u',
+		action='store_true',
+		help='perform a user idle sleep assertion'
 	)
 	me.add_argument(
-		u'-s',
-		action=u'store_true',
-		help=u'perform a system sleep assertion'
+		'-s',
+		action='store_true',
+		help='perform a system sleep assertion'
 	)
 	assertcmd.add_argument(
-		u'name',
-		help=u'the name of the assertion'
+		'name',
+		help='the name of the assertion'
 	)
 	assertcmd.add_argument(
-		u'timeout',
-		help=u'the duration (in seconds) of the assertion'
+		'timeout',
+		help='the duration (in seconds) of the assertion'
 	)
 	assertcmd.add_argument(
-		u'details',
-		nargs=u'?',
-		help=u'the description of the assertion (optional)'
+		'details',
+		nargs='?',
+		help='the description of the assertion (optional)'
 	)
 	assertcmd.set_defaults(func=cmd_assert)
 

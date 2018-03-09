@@ -22,8 +22,8 @@
 # SOFTWARE.
 
 
-from amdevice import *
-from plistservice import *
+from .amdevice import *
+from .plistservice import *
 from ctypes import *
 from datetime import datetime
 import socket
@@ -32,22 +32,22 @@ import socket
 class iptap_hdr_t(BigEndianStructure):
 	_pack_ = 1
 	_fields_ = [
-		(u'hdr_length', c_uint32),
-		(u'version', c_uint8),
-		(u'length', c_uint32),
-		(u'type', c_uint8),
-		(u'unit', c_uint16),
-		(u'io', c_uint8),
-		(u'protocol_family', c_uint32),
-		(u'frame_pre_length', c_uint32),
-		(u'frame_pst_length', c_uint32),
-		(u'if_name', c_char * 16)
+		('hdr_length', c_uint32),
+		('version', c_uint8),
+		('length', c_uint32),
+		('type', c_uint8),
+		('unit', c_uint16),
+		('io', c_uint8),
+		('protocol_family', c_uint32),
+		('frame_pre_length', c_uint32),
+		('frame_pst_length', c_uint32),
+		('if_name', c_char * 16)
 	]
 
 
 class Pcap(PlistService):
 	def __init__(self, amdevice):
-		PlistService.__init__(self, amdevice, [u'com.apple.pcapd'])
+		PlistService.__init__(self, amdevice, ['com.apple.pcapd'])
 
 	def get_packet(self):
 		return self._recvmsg()
@@ -56,23 +56,23 @@ class Pcap(PlistService):
 class pcap_hdr_t(Structure):
 	_pack_ = 1
 	_fields_ = [
-		(u'magic_number', c_uint32),
-		(u'version_major', c_uint16),
-		(u'version_minor', c_uint16),
-		(u'thiszone', c_int32),
-		(u'sigfigs', c_uint32),
-		(u'snaplen', c_uint32),
-		(u'network', c_uint32)
+		('magic_number', c_uint32),
+		('version_major', c_uint16),
+		('version_minor', c_uint16),
+		('thiszone', c_int32),
+		('sigfigs', c_uint32),
+		('snaplen', c_uint32),
+		('network', c_uint32)
 	]
 
 
 class pcaprec_hdr_t(Structure):
 	_pack_ = 1
 	_fields_ = [
-		(u'ts_sec', c_uint32),
-		(u'ts_usec', c_uint32),
-		(u'incl_len', c_uint32),
-		(u'orig_len', c_uint32)
+		('ts_sec', c_uint32),
+		('ts_usec', c_uint32),
+		('incl_len', c_uint32),
+		('orig_len', c_uint32)
 	]
 
 
@@ -83,7 +83,7 @@ class PcapFile(object):
 	PCAP_MINOR_VERSION = 4
 
 	def __init__(self, filename):
-		self._f = open(filename, u'wb')
+		self._f = open(filename, 'wb')
 		# write the hdr
 		self._f.write(pcap_hdr_t(
 			PcapFile.PCAP_MAGIC,
@@ -117,7 +117,7 @@ def register_argparse_pcap(cmdargs):
 
 	def cmd_pcap(args, dev):
 		pcapd = Pcap(dev)
-		pcap = PcapFile(args.path.decode(u'utf-8'))
+		pcap = PcapFile(args.path.decode('utf-8'))
 		try:
 			while True:
 				pkt = pcapd.get_packet()
@@ -131,12 +131,12 @@ def register_argparse_pcap(cmdargs):
 		pcapd.disconnect()
 
 	pcapcmd = cmdargs.add_parser(
-		u'pcap', 
-		help=u'record packets from device into pcap file'
+		'pcap', 
+		help='record packets from device into pcap file'
 	)
 	pcapcmd.add_argument(
-		u'path',
-		help=u'path of the file to write'
+		'path',
+		help='path of the file to write'
 	)
 	pcapcmd.set_defaults(func=cmd_pcap)
 

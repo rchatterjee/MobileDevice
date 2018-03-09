@@ -22,25 +22,25 @@
 # SOFTWARE.
 
 
-from MobileDevice import *
-from amdevice import *
-from plistservice import *
+from .MobileDevice import *
+from .amdevice import *
+from .plistservice import *
 import os
 
 
 class Syslog(object):
-	u'''Syslog relay class; starts the syslog service and reads all entries'''
+	'''Syslog relay class; starts the syslog service and reads all entries'''
 
 	def __init__(self, amdevice):
 		self.s = amdevice.start_service(AMSVC_SYSLOG_RELAY)
 		if self.s is None:
-			raise RuntimeError(u'Unable to launch:', AMSVC_SYSLOG_RELAY)
+			raise RuntimeError('Unable to launch:', AMSVC_SYSLOG_RELAY)
 
 	def disconnect(self):
 		os.close(self.s)
 
 	def read(self, length=1024):
-		u'''reads at most length bytes from the syslog; blocking if no more data
+		'''reads at most length bytes from the syslog; blocking if no more data
 		is avaliable
 
 		Arguments:
@@ -64,7 +64,7 @@ def register_argparse_syslog(cmdargs):
 
 	# syslog command
 	syslogcmd = cmdargs.add_parser(
-		u'syslog', 
-		help=u'displays syslog info from the device'
+		'syslog', 
+		help='displays syslog info from the device'
 	)
 	syslogcmd.set_defaults(func=cmd_syslog)
