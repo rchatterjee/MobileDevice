@@ -22,7 +22,7 @@
 # SOFTWARE.
 
 
-from .MobileDevice import *
+from MobileDevice import *
 import os
 import struct
 
@@ -46,36 +46,36 @@ class PlistService(object):
 				break
 
 		if self.s is None:
-			raise RuntimeError('Unable to launch one of:', servicenames)
+			raise RuntimeError(u'Unable to launch one of:', servicenames)
 
 	def disconnect(self):
 		os.close(self.s)
 
 	def _sendmsg(self, msg):
-		endian = '>I'
+		endian = u'>I'
 		if self.bigendian:
-			endian = '<I'
+			endian = u'<I'
 		data = dict_to_plist_encoding(msg, self.format)
-		os.write(self.s, struct.pack(endian.encode('utf-8'), len(data)))
+		os.write(self.s, struct.pack(endian.encode(u'utf-8'), len(data)))
 		os.write(self.s, data)
 
 
 	def _recvmsg(self):
 		retval = None
-		endian = '>I'
+		endian = u'>I'
 		if self.bigendian:
-			endian = '<I'
+			endian = u'<I'
 		length = os.read(self.s, 4)
 		#print "_recvmsg - %d: %s" % (len(length), length)
 		if length is not None and len(length) == 4:
-			l = struct.unpack(endian.encode('utf-8'), length)[0]
+			l = struct.unpack(endian.encode(u'utf-8'), length)[0]
 			reply = ''
 			left = l
 			while left > 0:
 				r = os.read(self.s, left) 
 				#print "  _recvmsg - %d: %s" % (len(r), r)
 				if r is None:
-					raise RuntimeError('Unable to read reply')
+					raise RuntimeError(u'Unable to read reply')
 				reply += r
 				left -= len(r)
 			retval = dict_from_plist_encoding(reply, self.format)

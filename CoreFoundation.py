@@ -27,12 +27,12 @@ import platform
 import datetime
 
 
-if platform.system() == 'Darwin':
-	CoreFoundation = CDLL('/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation')
-elif platform.system() == 'Windows':
-	raise NotImplementedError('need to find and import the CoreFoundation dll')
+if platform.system() == u'Darwin':
+	CoreFoundation = CDLL(u'/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation')
+elif platform.system() == u'Windows':
+	raise NotImplementedError(u'need to find and import the CoreFoundation dll')
 else:
-	raise OSError('Platform not supported')
+	raise OSError(u'Platform not supported')
 
 
 # Supporting types
@@ -75,8 +75,8 @@ CFBooleanGetValue = CoreFoundation.CFBooleanGetValue
 CFBooleanGetValue.restype = c_bool
 CFBooleanGetValue.argtypes = [CFBooleanRef]
 
-kCFBooleanTrue = c_void_p.in_dll(CoreFoundation, 'kCFBooleanTrue')
-kCFBooleanFalse = c_void_p.in_dll(CoreFoundation, 'kCFBooleanFalse')
+kCFBooleanTrue = c_void_p.in_dll(CoreFoundation, u'kCFBooleanTrue')
+kCFBooleanFalse = c_void_p.in_dll(CoreFoundation, u'kCFBooleanFalse')
 
 
 # CFNumber
@@ -225,8 +225,8 @@ CFDictionaryGetValue = CoreFoundation.CFDictionaryGetValue
 CFDictionaryGetValue.restype = CFTypeRef
 CFDictionaryGetValue.argtypes = [CFDictionaryRef, CFTypeRef]
 
-kCFTypeDictionaryKeyCallBacks = c_void_p.in_dll(CoreFoundation, 'kCFTypeDictionaryKeyCallBacks')
-kCFTypeDictionaryValueCallBacks = c_void_p.in_dll(CoreFoundation, 'kCFTypeDictionaryValueCallBacks')
+kCFTypeDictionaryKeyCallBacks = c_void_p.in_dll(CoreFoundation, u'kCFTypeDictionaryKeyCallBacks')
+kCFTypeDictionaryValueCallBacks = c_void_p.in_dll(CoreFoundation, u'kCFTypeDictionaryValueCallBacks')
 
 CFDictionarySetValue = CoreFoundation.CFDictionarySetValue
 CFDictionarySetValue.restype = None
@@ -300,13 +300,13 @@ CFArrayCreate = CoreFoundation.CFArrayCreate
 CFArrayCreate.restype = CFArrayRef
 CFArrayCreate.argtypes = [CFAllocatorRef, POINTER(c_void_p), CFIndex, c_void_p]
 
-kCFTypeArrayCallBacks = c_void_p.in_dll(CoreFoundation, 'kCFTypeArrayCallBacks')
+kCFTypeArrayCallBacks = c_void_p.in_dll(CoreFoundation, u'kCFTypeArrayCallBacks')
 
 
 # CFRunLoop
 CFRunLoopSourceRef = c_void_p
 CFRunLoopRef = c_void_p
-kCFRunLoopDefaultMode = c_void_p.in_dll(CoreFoundation, 'kCFRunLoopDefaultMode')
+kCFRunLoopDefaultMode = c_void_p.in_dll(CoreFoundation, u'kCFRunLoopDefaultMode')
 
 kCFRunLoopRunFinished = 1
 kCFRunLoopRunStopped = 2
@@ -363,22 +363,22 @@ CFUUIDGetConstantUUIDWithBytes.argtypes = [CFAllocatorRef,
 
 class CFUUIDBytes(Structure):
 	_fields_ = [
-		('byte0', c_uint8),
-		('byte1', c_uint8),
-		('byte2', c_uint8),
-		('byte3', c_uint8),
-		('byte4', c_uint8),
-		('byte5', c_uint8),
-		('byte6', c_uint8),
-		('byte7', c_uint8),
-		('byte8', c_uint8),
-		('byte9', c_uint8),
-		('byte10', c_uint8),
-		('byte11', c_uint8),
-		('byte12', c_uint8),
-		('byte13', c_uint8),
-		('byte14', c_uint8),
-		('byte15', c_uint8)
+		(u'byte0', c_uint8),
+		(u'byte1', c_uint8),
+		(u'byte2', c_uint8),
+		(u'byte3', c_uint8),
+		(u'byte4', c_uint8),
+		(u'byte5', c_uint8),
+		(u'byte6', c_uint8),
+		(u'byte7', c_uint8),
+		(u'byte8', c_uint8),
+		(u'byte9', c_uint8),
+		(u'byte10', c_uint8),
+		(u'byte11', c_uint8),
+		(u'byte12', c_uint8),
+		(u'byte13', c_uint8),
+		(u'byte14', c_uint8),
+		(u'byte15', c_uint8)
 	]
 
 CFUUIDGetUUIDBytes = CoreFoundation.CFUUIDGetUUIDBytes
@@ -410,12 +410,12 @@ CFSetGetValues.argtypes = [CFSetRef, POINTER(c_void_p)]
 # python/CF conversion functions
 def CFTypeFrom(value):
 	retval = None
-	# if isinstance(value, str):
-	# 	data = cast(c_char_p(value), POINTER(c_ubyte))
-	# 	retval = CFDataCreate(None, data, len(value))
-
 	if isinstance(value, str):
-		retval = CFStringCreateWithCString(None, value.encode('utf-8'), kCFStringEncodingUTF8)
+		data = cast(c_char_p(value), POINTER(c_ubyte))
+		retval = CFDataCreate(None, data, len(value))
+
+	elif isinstance(value, unicode):
+		retval = CFStringCreateWithCString(None, value, kCFStringEncodingUTF8)
 
 	elif isinstance(value, bool):
 		if value:
@@ -433,10 +433,10 @@ def CFTypeFrom(value):
 		retval = CFNumberCreate(None, kCFNumberDoubleType, byref(v))
 
 	elif isinstance(value, dict):
-		l = len(list(value.keys()))
+		l = len(value.keys())
 		keys = []
 		values = []
-		for k, v in value.items():
+		for k, v in value.iteritems():
 			keys.append(CFTypeFrom(k))
 			values.append(CFTypeFrom(v))
 
@@ -521,14 +521,14 @@ def CFTypeTo(value):
 			retval.add(CFTypeTo(values[i]))
 	else:
 		CFShow(value)
-		print(('RuntimeError(',value, type(value), typeid))
+		print(u'RuntimeError(',value, type(value), typeid)
 	return retval
 
 
 def dict_to_plist_encoding(d, format=kCFPropertyListBinaryFormat_v1_0):
 	retval = None
 	if not isinstance(d, dict):
-		raise TypeError('d must be a dict')
+		raise TypeError(u'd must be a dict')
 
 	# convert the dict into a CFDictionary
 	cfdict = CFTypeFrom(d)
@@ -556,7 +556,7 @@ def dict_to_plist_encoding(d, format=kCFPropertyListBinaryFormat_v1_0):
 def dict_from_plist_encoding(s, format=kCFPropertyListBinaryFormat_v1_0):
 	retval = None
 	if not isinstance(s, str):
-		raise TypeError('s must be a str')
+		raise TypeError(u's must be a str')
 
 	# convert str to CFData
 	cfdata = CFTypeFrom(s)

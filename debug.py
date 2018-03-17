@@ -22,38 +22,38 @@
 # SOFTWARE.
 
 
-from .MobileDevice import *
-from .amdevice import *
-from .installationproxy import *
+from MobileDevice import *
+from amdevice import *
+from installationproxy import *
 import os
 import tempfile
 import posixpath
 
 
 class DebugServer(object):
-	'''Debugserver class; starts an instance of debugserver and spawns an lldb
+	u'''Debugserver class; starts an instance of debugserver and spawns an lldb
 	instance to talk to it'''
 
 	def __init__(self, amdevice):
-		self.s = amdevice.start_service('com.apple.debugserver')
+		self.s = amdevice.start_service(u'com.apple.debugserver')
 		if self.s is None:
-			raise RuntimeError('Unable to launch:', 'com.apple.debugserver')
+			raise RuntimeError(u'Unable to launch:', u'com.apple.debugserver')
 
 	def disconnect(self):
 		os.close(self.s)
 
 
 class DebugAppList(object):
-	'''Debugserver class; starts an instance of debugserver and spawns an lldb
+	u'''Debugserver class; starts an instance of debugserver and spawns an lldb
 	instance to talk to it'''
 
 	def __init__(self, amdevice):
-		self.s = amdevice.start_service('com.apple.debugserver.applist')
+		self.s = amdevice.start_service(u'com.apple.debugserver.applist')
 		if self.s is None:
-			raise RuntimeError('Unable to launch:', 'com.apple.debugserver.applist')
+			raise RuntimeError(u'Unable to launch:', u'com.apple.debugserver.applist')
 
 	def get_applist(self):
-		'''Retrieves an list of aplications on the device; with pids if their 
+		u'''Retrieves an list of aplications on the device; with pids if their 
 		running
 
 		Returns:
@@ -68,7 +68,7 @@ class DebugAppList(object):
 			<integer>87</integer>
 		'''
 		retval = ''
-		os.write(self.s, 'ping') # XXX we need to prod it somehow
+		os.write(self.s, u'ping') # XXX we need to prod it somehow
 		while True:
 			data = os.read(self.s, 4096)
 			if len(data) == 0:
@@ -85,23 +85,23 @@ class GDB(object):
 		self.dev = dev
 		self._file = None
 		self._substitutions = []
-		self._runcmds = ''
+		self._runcmds = u''
 
 		if device_support_path is None:
 			device_support_path = dev.find_device_support_path()		
 
 		self._set_file(local_path, remote_path)
 		# add standard substitutions
-		root = os.path.join(device_support_path, 'Symbols')
+		root = os.path.join(device_support_path, u'Symbols')
 		for f in os.listdir(root):
 			if os.path.isdir(os.path.join(root, f)):
 				self._add_substitution(
-					'/' + f, 
+					u'/' + f, 
 					posixpath.join(root, f)
 				)
 
 	def find_gdb(self):
-		return '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/libexec/gdb/gdb-arm-apple-darwin'
+		return u'/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/libexec/gdb/gdb-arm-apple-darwin'
 
 	def _set_debugserver_fd(self, fd):
 		# now gdb's remote protocol requires us to setup a unix socket; when you
@@ -115,11 +115,11 @@ class GDB(object):
 
 	def _get_bundleid(self, local_path):
 		# open the app and get its id
-		f = open(os.path.join(local_path, 'Info.plist'), 'rb')
+		f = open(os.path.join(local_path, u'Info.plist'), u'rb')
 		plist = f.read()
 		f.close()
 		info = dict_from_plist_encoding(plist)
-		return info['CFBundleIdentifier']
+		return info[u'CFBundleIdentifier']
 
 	def _set_file(self, local_path, remote_path=None):
 		import pprint 
@@ -136,12 +136,12 @@ class GDB(object):
 			ip.disconnect()
 			#pprint.pprint(apps)
 			for app in apps:
-				if app['CFBundleIdentifier'] == bundleid:
-					remote_path = app['Path']
+				if app[u'CFBundleIdentifier'] == bundleid:
+					remote_path = app[u'Path']
 					break
 			if remote_path is None:
 				raise RuntimeError(
-					'Application %s, not installed on device' % bundleid
+					u'Application %s, not installed on device' % bundleid
 				)
 		else:
 			# we want the remote path to be the directory; for a .app thats 
@@ -150,11 +150,11 @@ class GDB(object):
 		self._file = (local_path, remote_path)
 
 		# we also want to add a substitution for our enclosing folder
-		if local_path[-1] == '/' or local_path[-1] == '\\':
+		if local_path[-1] == u'/' or local_path[-1] == u'\\':
 			local_path = local_path[:-1]
 		local_folder = os.path.dirname(local_path)
 
-		if remote_path[-1] == '/' or remote_path[-1] == '\\':
+		if remote_path[-1] == u'/' or remote_path[-1] == u'\\':
 			remote_path = remote_path[:-1]
 		remote_folder = posixpath.dirname(remote_path)
 		self._add_substitution(local_folder, remote_folder)
@@ -164,12 +164,12 @@ class GDB(object):
 		# we can get errors if the remote folder is in /private/var - its 
 		# normally refered to by /var.  So add another substitution if need be.
 		# there may be other cases of this but this it the only one I've seen
-		if remote_folder.startswith('/private/var'):
-			remote_folder = remote_folder.replace('/private/var', '/var/')
+		if remote_folder.startswith(u'/private/var'):
+			remote_folder = remote_folder.replace(u'/private/var', u'/var/')
 			self._substitutions.append((local_folder, remote_folder))
 
 	def _get_initial_cmds(self):
-		retval = '''
+		retval = u'''
 set auto-raise-load-levels 1
 set mi-show-protections off
 set trust-readonly-sections 1
@@ -185,9 +185,9 @@ set shlib-path-substitutions'''
 	
 		# add all the path substitutions
 		for s in self._substitutions:
-			retval += ' "%s" "%s"' % s
+			retval += u' "%s" "%s"' % s
 
-		retval += '''
+		retval += u'''
 set remote max-packet-size 4096
 set remote executable-directory %s
 set remote noack-mode 1
@@ -200,7 +200,7 @@ mem 0x00000000 0x0fff none
 
 		retval += self._runcmds
 
-		retval += '''
+		retval += u'''
 set minimal-signal-handling 0
 set inferior-auto-start-cfm off
 set sharedLibrary load-rules dyld ".*libobjc.*" all dyld ".*CoreFoundation.*" all dyld ".*Foundation.*" all dyld ".*libSystem.*" all dyld ".*AppKit.*" all dyld ".*PBGDBIntrospectionSupport.*" all dyld ".*/usr/lib/dyld.*" all dyld ".*CarbonDataFormatters.*" all dyld ".*libauto.*" all dyld ".*CFDataFormatters.*" all dyld "/System/Library/Frameworks\\\\\\\\|/System/Library/PrivateFrameworks\\\\\\\\|/usr/lib" extern dyld ".*" all exec ".*" all
@@ -212,16 +212,16 @@ set inferior-auto-start-dyld 1
 
 	def set_run(self, args=None):
 		# we specify file when running; we can't when doing attach
-		runcmd = 'file "%s"\nrun' % (self._file[0])
+		runcmd = u'file "%s"\nrun' % (self._file[0])
 		if args is not None:
 			for arg in args:
-				runcmd += '"%s"' % arg
-		runcmd += '\n'
+				runcmd += u'"%s"' % arg
+		runcmd += u'\n'
 		self._runcmds = runcmd
 
 	def set_attach(self, pid):
 		# XXX figure out what we should use instead of file - perhaps exec-file?
-		self._runcmds = 'attach %s' % pid
+		self._runcmds = u'attach %s' % pid
 
 	def run(self):
 		# create the temp file and fill it with the init commands
@@ -235,7 +235,7 @@ set inferior-auto-start-dyld 1
 		os.close(cmdfd)
 
 		# start gdb
-		os.system(self.find_gdb() + ' --arch armv7 -q -x "%s"' % path)
+		os.system(self.find_gdb() + u' --arch armv7 -q -x "%s"' % path)
 
 		# cleanup
 		dbg.disconnect()
@@ -245,7 +245,7 @@ set inferior-auto-start-dyld 1
 def register_argparse_debugserver(cmdargs):
 	import argparse
 	import sys
-	from . import imagemounter
+	import imagemounter
 
 	def load_developer_dmg(args, dev):
 		if not args.advanced:
@@ -264,7 +264,7 @@ def register_argparse_debugserver(cmdargs):
 				imagepath = None
 				if args.device_support_path:
 					imagepath = dev.find_developer_disk_image_path(
-						args.device_support_path.decode('utf-8')
+						args.device_support_path.decode(u'utf-8')
 					)
 				im.mount(imagepath)
 				im.disconnect()
@@ -280,49 +280,49 @@ def register_argparse_debugserver(cmdargs):
 		colmax = [0, 0, 0]
 		for app in al:
 			# pid
-			pid = '-'
+			pid = u'-'
 			try:
 				# XXX why does hasattr not work properly on this?
-				pid = '%u' % app['pid']
+				pid = u'%u' % app[u'pid']
 			except:
 				pass
 			if len(pid) > colmax[0]:
 				colmax[0] = len(pid)
 
 			# foreground
-			foreground = ' '
-			if app['isFrontApp']:
-				foreground = '*'
+			foreground = u' '
+			if app[u'isFrontApp']:
+				foreground = u'*'
 
 			# name
-			name = app['displayName']
+			name = app[u'displayName']
 			if len(name) > colmax[1]:
 				colmax[1] = len(name)
 
 			# path
-			path = app['executablePath']
+			path = app[u'executablePath']
 			if len(path) > colmax[2]:
 				colmax[2] = len(path)
 			rows.append([pid, foreground, name, path])
 
 		for row in rows:
-			print((
-				row[0].rjust(colmax[0]) + ' ' +
-				row[1] + ' ' +
-				row[2].ljust(colmax[1]) + '  ' + 
+			print(
+				row[0].rjust(colmax[0]) + u' ' +
+				row[1] + u' ' +
+				row[2].ljust(colmax[1]) + u'  ' + 
 				row[3].ljust(colmax[2])
-			))
+			)
 
 	def cmd_gdb(args, dev):
 		load_developer_dmg(args, dev)
 
 		remote = None
 		if args.remote is not None:
-			remote = args.remote.decode('utf-8')
+			remote = args.remote.decode(u'utf-8')
 		gdb = GDB(
 			dev, 
-			args.device_support_path.decode('utf-8'), 
-			args.program.decode('utf-8'),
+			args.device_support_path.decode(u'utf-8'), 
+			args.program.decode(u'utf-8'),
 			remote
 		)
 		if args.p:
@@ -332,42 +332,42 @@ def register_argparse_debugserver(cmdargs):
 		gdb.run()
 
 	debugparser = cmdargs.add_parser(
-		'debug', 
-		help='debugging commands; utilising debugserver in the developer .dmg'
+		u'debug', 
+		help=u'debugging commands; utilising debugserver in the developer .dmg'
 	)
 	debugparser.add_argument(
-		'-s',
-		metavar='support-path',
-		dest='device_support_path',
-		help='specify a custom device support folder; instead of finding the default'
+		u'-s',
+		metavar=u'support-path',
+		dest=u'device_support_path',
+		help=u'specify a custom device support folder; instead of finding the default'
 	)
 	debugcmd = debugparser.add_subparsers()
 
 	# applist command
 	applistcmd = debugcmd.add_parser(
-		'applist',
-		help='lists applications; which is front and pid if running'
+		u'applist',
+		help=u'lists applications; which is front and pid if running'
 	)
 	applistcmd.set_defaults(func=cmd_applist)
 
 	# gdb command
 	gdbcmd = debugcmd.add_parser(
-		'gdb', 
-		help='launches gdb; connected to the device'
+		u'gdb', 
+		help=u'launches gdb; connected to the device'
 	)
 	gdbcmd.add_argument(
-		'-p',
-		metavar='pid',
-		help='if specified we attempt to connect to this process rather than start a new instance'
+		u'-p',
+		metavar=u'pid',
+		help=u'if specified we attempt to connect to this process rather than start a new instance'
 	)
 	gdbcmd.add_argument(
-		'program', 
-		help='local path to the program to debug; the file must already be on the device'
+		u'program', 
+		help=u'local path to the program to debug; the file must already be on the device'
 	)
 	gdbcmd.add_argument(
-		'remote', 
-		nargs='?',
-		help='if the program is a plain mach-o rather than a .app you also need to specify where on the device the file resides'
+		u'remote', 
+		nargs=u'?',
+		help=u'if the program is a plain mach-o rather than a .app you also need to specify where on the device the file resides'
 	)
 	gdbcmd.set_defaults(func=cmd_gdb)
 

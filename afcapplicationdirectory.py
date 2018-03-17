@@ -22,9 +22,9 @@
 # SOFTWARE.
 
 
-from .amdevice import *
-from .plistservice import *
-from .afc import *
+from amdevice import *
+from plistservice import *
+from afc import *
 
 
 class AFCApplicationDirectory(AFC):
@@ -36,10 +36,10 @@ class AFCApplicationDirectory(AFC):
 			kCFPropertyListXMLFormat_v1_0
 		)
 		plist._sendmsg({
-			'Command': 'VendContainer',
-			'Identifier': identifier
+			u'Command': u'VendContainer',
+			u'Identifier': identifier
 		})
 		reply = plist._recvmsg()
-		if 'Status' not in reply or reply['Status'] != 'Complete':
-			raise RuntimeError('Error connecting to application', reply)
+		if u'Status' not in reply or reply[u'Status'] != u'Complete':
+			raise RuntimeError(u'Error connecting to application', reply)
 		AFC.__init__(self, plist.s)

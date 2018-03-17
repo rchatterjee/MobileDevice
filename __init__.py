@@ -26,22 +26,22 @@
 as a submodule in git
 """
 
-from .afc import *
-from .afcapplicationdirectory import *
-from .afccrashlogdirectory import *
-from .afcmediadirectory import *
-from .afcroot import *
-from .amdevice import *
-from .diagnostics import *
-from .installationproxy import *
-from .imagemounter import *
-from .springboard import *
-from .filerelay import *
-from .syslog import *
-from .webkitinspector import *
-from .debug import *
-from .assertionagent import *
-from .pcap import *
-from .notificationproxy import *
-from .crashmover import *
+from afc import *
+from afcapplicationdirectory import *
+from afccrashlogdirectory import *
+from afcmediadirectory import *
+from afcroot import *
+from amdevice import *
+from diagnostics import *
+from installationproxy import *
+from imagemounter import *
+from springboard import *
+from filerelay import *
+from syslog import *
+from webkitinspector import *
+from debug import *
+from assertionagent import *
+from pcap import *
+from notificationproxy import *
+from crashmover import *
 

@@ -22,27 +22,27 @@
 # SOFTWARE.
 
 
-from .MobileDevice import *
-from .amdevice import *
-from .plistservice import *
+from MobileDevice import *
+from amdevice import *
+from plistservice import *
 import os
 import time
 
 
 class CrashMover(object):
-	'''Moves crash logs from their various scattered locations into the afc 
+	u'''Moves crash logs from their various scattered locations into the afc 
 	crash log directory'''
 
 	def __init__(self, amdevice):
-		self.s = amdevice.start_service('com.apple.crashreportmover')
+		self.s = amdevice.start_service(u'com.apple.crashreportmover')
 		if self.s is None:
-			raise RuntimeError('Unable to launch: com.apple.crashreportmover')
+			raise RuntimeError(u'Unable to launch: com.apple.crashreportmover')
 
 	def disconnect(self):
 		os.close(self.s)
 
 	def move_crashlogs(self, extensions=None):
-		'''Moves all crash logs into the afc crash log directory
+		u'''Moves all crash logs into the afc crash log directory
 
 		Arguments:
 		extensions -- if present a list of crash file extensions to move 
@@ -60,7 +60,7 @@ class CrashMover(object):
 def register_argparse_crashmover(cmdargs):
 	import argparse
 	import sys
-	from . import afccrashlogdirectory
+	import afccrashlogdirectory
 	import posixpath
 	import stat
 
@@ -85,8 +85,8 @@ def register_argparse_crashmover(cmdargs):
 			elif info.st_ifmt == stat.S_IFLNK:
 				pass # XXX handle symlinks e.g. LatestCrash*
 			else:
-				s = afc.open(posixpath.join(path, name), 'r')
-				d = open(os.path.join(dest, name), 'w+')
+				s = afc.open(posixpath.join(path, name), u'r')
+				d = open(os.path.join(dest, name), u'w+')
 				d.write(s.readall())
 				d.close()
 				s.close()
@@ -103,7 +103,7 @@ def register_argparse_crashmover(cmdargs):
 				try:
 					afc.remove(posixpath.join(path, name))
 				except:
-					print(('unable to remove file: %s' % name))
+					print('unable to remove file: %s' % name)
 
 		for name in dirlist:
 			del_logs(afc, name)
@@ -117,40 +117,40 @@ def register_argparse_crashmover(cmdargs):
 
 		# retrieve the crashes
 		afc = afccrashlogdirectory.AFCCrashLogDirectory(dev)
-		get_logs(afc, '/', args.dest.decode('utf-8'))
+		get_logs(afc, u'/', args.dest.decode(u'utf-8'))
 
 		# optionally, delete the crashes
 		if args.delete_logs:
-			del_logs(afc, '/')
+			del_logs(afc, u'/')
 		afc.disconnect()
 
 	# cmd_crashmove command
 	crashparser = cmdargs.add_parser(
-		'crash', 
-		help='manipulates crash logs'
+		u'crash', 
+		help=u'manipulates crash logs'
 	)
 
 	crashcmd = crashparser.add_subparsers()
 
 	crashmovecmd = crashcmd.add_parser(
-		'move', 
-		help='moves crash logs into the afc directory'
+		u'move', 
+		help=u'moves crash logs into the afc directory'
 	)
 	crashmovecmd.set_defaults(func=cmd_crashmove)
 
 	# get the crash logs
 	crashgetcmd = crashcmd.add_parser(
-		'get', 
-		help='retrieves crash logs from the device'
+		u'get', 
+		help=u'retrieves crash logs from the device'
 	)
 	crashgetcmd.add_argument(
-		'-d',
-		dest='delete_logs',
-		action='store_true',
-		help='if specified, delete the crash logs after retrieval'
+		u'-d',
+		dest=u'delete_logs',
+		action=u'store_true',
+		help=u'if specified, delete the crash logs after retrieval'
 	)
 	crashgetcmd.add_argument(
-		'dest',
-		help='destination directory; files are appended into it'
+		u'dest',
+		help=u'destination directory; files are appended into it'
 	)	
 	crashgetcmd.set_defaults(func=cmd_crashget)

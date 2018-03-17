@@ -22,8 +22,8 @@
 # SOFTWARE.
 
 
-from .amdevice import *
-from .plistservice import *
+from amdevice import *
+from plistservice import *
 
 
 # collect valid notification names e.g.: com.apple.springboard.hasBlankedScreen
@@ -32,25 +32,25 @@ class NotificationProxy(PlistService):
 		PlistService.__init__(
 			self, 
 			amdevice, 
-			['com.apple.mobile.notification_proxy']
+			[u'com.apple.mobile.notification_proxy']
 		)
 
 	def post_notificaiton(self, name):
 		self._sendmsg({
-			'Command': 'PostNotification',
-			'Name': name
+			u'Command': u'PostNotification',
+			u'Name': name
 		})
 
 	def shutdown(self):
 		self._sendmsg({
-			'Command': 'Shutdown'
+			u'Command': u'Shutdown'
 		})
 		self._recvmsg() # discard reply
 
 	def register_notification(self, name):
 		self._sendmsg({
-			'Command': 'ObserveNotification',
-			'Name': name
+			u'Command': u'ObserveNotification',
+			u'Name': name
 		})
 	
 	def observe_notifications(self):
@@ -59,10 +59,10 @@ class NotificationProxy(PlistService):
 			msg = self._recvmsg()
 			if msg is None:
 				break
-			if 'Command' in msg and msg['Command'] == 'RelayNotification':
-				msg = msg['Name']
+			if u'Command' in msg and msg[u'Command'] == u'RelayNotification':
+				msg = msg[u'Name']
 				break
-			print(('Unknown message: ' + msg.__str__()))
+			print(u'Unknown message: ' + msg.__str__())
 		return msg
 
 
@@ -71,7 +71,7 @@ def register_argparse_notifyproxy(cmdargs):
 
 	def cmd_post(args, dev):
 		notify = NotificationProxy(dev)
-		notify.post_notificaiton(args.name.decode('utf-8'))
+		notify.post_notificaiton(args.name.decode(u'utf-8'))
 		notify.disconnect()
 
 	def cmd_shutdown(args, dev):
@@ -81,7 +81,7 @@ def register_argparse_notifyproxy(cmdargs):
 
 	def cmd_observe(args, dev):
 		notify = NotificationProxy(dev)
-		notify.register_notification(args.name.decode('utf-8'))
+		notify.register_notification(args.name.decode(u'utf-8'))
 		try:
 			while True:
 				msg = notify.observe_notifications()
@@ -93,37 +93,37 @@ def register_argparse_notifyproxy(cmdargs):
 		notify.disconnect()
 
 	notifyparser = cmdargs.add_parser(
-		'notify',
-		help='notification proxy commands'
+		u'notify',
+		help=u'notification proxy commands'
 	)
 	notifycmds = notifyparser.add_subparsers()
 
 	# post command
 	postcmd = notifycmds.add_parser(
-		'post', 
-		help='post a notification to the system'
+		u'post', 
+		help=u'post a notification to the system'
 	)
 	postcmd.add_argument(
-		'name',
-		help='the name of the notification to send'
+		u'name',
+		help=u'the name of the notification to send'
 	)
 	postcmd.set_defaults(func=cmd_post)
 
 	# shutdown command
 	shutdowncmd = notifycmds.add_parser(
-		'shutdown', 
-		help='shutdown the notification system'
+		u'shutdown', 
+		help=u'shutdown the notification system'
 	)
 	shutdowncmd.set_defaults(func=cmd_shutdown)
 
 	# observe command
 	observecmd = notifycmds.add_parser(
-		'observe', 
-		help='observe a notification in the system'
+		u'observe', 
+		help=u'observe a notification in the system'
 	)
 	observecmd.add_argument(
-		'name',
-		help='the name of the notification to observe'
+		u'name',
+		help=u'the name of the notification to observe'
 	)
 	observecmd.set_defaults(func=cmd_observe)
 
