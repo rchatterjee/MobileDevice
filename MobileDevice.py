@@ -25,7 +25,7 @@
 from ctypes import *
 import platform
 
-from CoreFoundation import *
+from .CoreFoundation import *
 
 
 if platform.system() == u'Darwin':

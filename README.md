@@ -64,8 +64,9 @@ or in code:
 				printdir(afc, path + name + isdir)
 	
 	dev = list_devices()[0]
-	dev.connect()
-	afc = AFC(dev)
+	d = AMDevice(dev)
+	d.connect()
+	afc = AFC(d)
 
 	printdir(afc, u'/var/mobile/Media') # recursive print of all files visible
 
@@ -83,8 +84,9 @@ or in code:
 	from MobileDevice import *
 
 	dev = list_devices()[0]
-	dev.connect()
-	fr = FileRelay(dev)
+	d = AMDevice(dev)
+	d.connect()
+	fr = FileRelay(d)
 
 	f = open(u'dump.cpio.gz', 'wb')
 	f.write(fr.retrieve([
@@ -114,8 +116,9 @@ or in code:
 	import sys
 
 	dev = list_devices()[0]
-	dev.connect()
-	sl = Syslog(dev)
+	d = AMDevice(dev)
+	d.connect()
+	sl = Syslog(d)
 
 	while True:
 		msg = sl.read()
