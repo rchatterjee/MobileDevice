@@ -56,12 +56,35 @@ class InstallationProxy(PlistService):
         return retval
 
     def install_application(self, path, options=None, progress=None):
-        u'''Install an application from the /PublicStaging directory'''
+        u'''Install an application from the /PublicStaging directory. Copy the .app first to this directory '''
         self._install_or_upgrade(True, path, options, progress)
 
     def upgrade_application(self, path, options=None, progress=None):
         u'''Upgrade an application from the /PublicStaging directory'''
         self._install_or_upgrade(False, path, options, progress)
+
+    def uninstall_application(self, appid, options=None, progress=None):
+        """Uninstall an application @appid"""
+        def callback(cfdict, arg):
+            pass
+
+        cfappid = CFTypeFrom(appid)
+        if options is not None:
+            cfoptions = CFTypeFrom(options)
+        else:
+            cfoptions = CFTypeFrom({
+                u'PackageType': u'Developer'
+            })
+        # if progress is not None:
+        #     cb = AFCProgressCallback(progress)
+        # else:
+        #     cb = AFCProgressCallback(callback)
+        err = AMDeviceSecureUninstallApplication(self.s, cfappid, cfoptions, None, None)
+        CFRelease(cfpath)
+        CFRelease(cfoptions)
+        if err != MDERR_OK:
+            raise RuntimeError(u'Unable to uninstall application: {}. Error: {}'.format(appid, err))
+
 
     def _install_or_upgrade(self, install, path, options=None, progress=None):
         def callback(cfdict, arg):
@@ -116,6 +139,14 @@ def register_argparse_install(cmdargs):
             apppath = apps[appid]
             print(appid.ljust(maxappid) + u' ' + apppath)
 
+    def cmd_uninstall(args, dev):
+        print(args.appids)
+        pxy = InstallationProxy(dev)
+        for appid in args.appids:
+            print("Uninstalling {}".format(appid))
+            pxy.uninstall_application(appid)
+        pxy.disconnect()
+
     installparser = cmdargs.add_parser(
         u'install',
         help=u'installation proxy commands'
@@ -135,3 +166,11 @@ def register_argparse_install(cmdargs):
         help=u'lists all application ids'
     )
     listappscmd.set_defaults(func=cmd_listapps)
+
+    # listappid command
+    uninstallapp = installcmd.add_parser(
+        u'uninstall',
+        help=u'Uninstall apps by their application ids'
+    )
+    uninstallapp.add_argument("--appids", action="store", nargs="+")
+    uninstallapp.set_defaults(func=cmd_uninstall)

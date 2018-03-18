@@ -281,6 +281,16 @@ AMDeviceInstallApplication.argtypes = [
 	c_void_p
 ]
 
+AMDeviceSecureUninstallApplication = MobileDevice.AMDeviceSecureUninstallApplication
+AMDeviceSecureUninstallApplication.restype = mach_error_t
+AMDeviceSecureUninstallApplication.argtypes = [
+	c_uint32, 
+	CFStringRef, 
+	CFDictionaryRef, 
+	AMDeviceProgressCallback, 
+	c_void_p
+]
+
 # AMDeviceInstallPackage - appears to be legacy install (uses Nikita)
 
 # XXX AMDeviceInstallProvisioningProfile
@@ -353,7 +363,7 @@ AMDeviceRemoveValue.argtypes = [AMDeviceRef, CFStringRef, CFStringRef]
 # AMDeviceSecureUninstallApplication - we will use the non-secure wrapper
 # AMDeviceSecureUpgradeApplication - we will use the non-secure wrapper
 # AMDeviceSetUserInfo - not needed; sets the user info member of AMDeviceRef
- 
+
 AMDeviceSetValue = MobileDevice.AMDeviceSetValue
 AMDeviceSetValue.restype = mach_error_t
 AMDeviceSetValue.argtypes = [AMDeviceRef, CFStringRef, CFStringRef, CFTypeRef]
